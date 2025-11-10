@@ -19,12 +19,13 @@ class Waypoint(models.Model):
     Acts as a library/dictionary of all unique locations.
     A single waypoint can be reused in many different routes.
     """
-    name = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=128, null=True, blank=True)
-    postal_code = models.CharField(max_length=15, null=True, blank=True)
-    street = models.CharField(max_length=255, null=True, blank=True)
-    house_number = models.CharField(max_length=15, null=True, blank=True)
-    apartment_number = models.CharField(max_length=15, null=True, blank=True)
+    name = models.CharField(max_length=255, blank=True, default="")
+    city = models.CharField(max_length=128, blank=True, default="")
+    postal_code = models.CharField(max_length=15, blank=True, default="")
+    street = models.CharField(max_length=255, blank=True, default="")
+    house_number = models.CharField(max_length=15, blank=True, default="")
+    apartment_number = models.CharField(max_length=15, blank=True, default="")
+
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
@@ -38,16 +39,15 @@ class Waypoint(models.Model):
                 
                 UniqueConstraint(
                     fields=['city', 'postal_code', 'street', 'house_number', 'apartment_number'],
-                    condition=Q(city__isnull=False) & Q(street__isnull=False) & Q(house_number__isnull=False),
                     name='unique_address_not_null'
                 ),
 
                 CheckConstraint(
-                    check=Q(
-                        (Q(city__isnull=False) & Q(street__isnull=False) & Q(house_number__isnull=False)) |
-                        (Q(latitude__isnull=False) & Q(longitude__isnull=False))
-                    ),
-                    name='check_valid_waypoint_data'
+                check=Q(
+                    ( ~Q(city="") & ~Q(street="") & ~Q(house_number="") ) |
+                    ( Q(latitude__isnull=False) & Q(longitude__isnull=False) )
+                ),
+                name='check_valid_waypoint_data'
                 )
             ]
 

@@ -34,12 +34,12 @@ Acts as a library/dictionary of all unique locations available in the system. A 
 | Field | Django Field Type | Notes |
 | :--- | :--- | :--- |
 | `id` | `AutoField` | **Primary Key.** |
-| `name` | `CharField(max_length=255)` | **Optional.** The user-given name for the waypoint. (`null=True, blank=True`) |
-| `city` | `CharField(max_length=128)` | **Optional.** (`null=True, blank=True`) |
-| `postal_code` | `CharField(max_length=15)` | **Optional.** (`null=True, blank=True`) |
-| `street` | `CharField(max_length=255)` | **Optional.** (`null=True, blank=True`) |
-| `house_number` | `CharField(max_length=15)` | **Optional.** (`null=True, blank=True`) |
-| `apartment_number` | `CharField(max_length=15)` | **Optional.** (`null=True, blank=True`) |
+| `name` | `CharField(max_length=255)` | **Optional.** Uses `blank=True, default=""` |
+| `city` | `CharField(max_length=128)` | **Optional.** Uses `blank=True, default=""` |
+| `postal_code` | `CharField(max_length=15)` | **Optional.** Uses `blank=True, default=""` |
+| `street` | `CharField(max_length=255)` | **Optional.** Uses `blank=True, default=""` |
+| `house_number` | `CharField(max_length=15)` | **Optional.** Uses `blank=True, default=""` |
+| `apartment_number` | `CharField(max_length=15)` | **Optional.** Uses `blank=True, default=""` |
 | `latitude` | `DecimalField(max_digits=9, decimal_places=6)` | **Optional.** Geographic latitude. (`null=True, blank=True`) |
 | `longitude` | `DecimalField(max_digits=9, decimal_places=6)` | **Optional.** Geographic longitude. (`null=True, blank=True`) |
 
@@ -48,13 +48,13 @@ Acts as a library/dictionary of all unique locations available in the system. A 
 These constraints are critical for preventing duplicate and "empty" data.
 
 1.  **`UNIQUE (latitude, longitude)`**
-    * **Purpose:** Ensures that no two waypoints share the exact same set of coordinates. This prevents ambiguity when plotting points.
+    * **Purpose:** Ensures no two waypoints share the exact same coordinates. This constraint is applied **conditionally**. It only checks for uniqueness if both the `latitude` AND `longitude` fields are **NOT NULL** (this reflects the `condition=Q(...)` logic in the code).
 
 2.  **`UNIQUE (city, postal_code, street, house_number, apartment_number)`**
-    * **Purpose:** Ensures that no two waypoints share the exact same full address. This prevents duplicate entries for named locations.
+    * **Purpose:** Ensures that no two waypoints share the exact same full address. This prevents duplicate entries for named locations. This constraint works correctly because all blank fields are saved as empty strings (`""`) instead of `NULL`, allowing the database to compare them.
 
-3.  **`CHECK ( (city IS NOT NULL AND street IS NOT NULL AND house_number IS NOT NULL) OR (latitude IS NOT NULL AND longitude IS NOT NULL) )`**
-    * **Purpose:** Enforces data validity. A waypoint is only considered valid if it contains *either* a minimal usable address (city, street, number) *or* a valid set of geographic coordinates. This prevents empty or useless records in the database.
+3.  **`CHECK ( (city!="" AND street!="" AND house_number!="") OR (latitude IS NOT NULL AND longitude IS NOT NULL) )`**
+    * **Purpose:** Enforces data validity. A waypoint is only considered valid if it contains *either* a minimal usable address (city, street, and number are NOT empty strings) *or* a valid set of geographic coordinates.
 
 ---
 

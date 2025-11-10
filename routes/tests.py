@@ -74,18 +74,25 @@ class WaypointModelTests(TestCase):
         Tests that duplicate coordinates (violating UNIQUE) raise IntegrityError.
         """
         Waypoint.objects.create(latitude=10.0, longitude=10.0)
+        self.assertEqual(Waypoint.objects.count(), 1)
         with self.assertRaises(IntegrityError, msg="Duplicate coords did not raise IntegrityError"):
             Waypoint.objects.create(latitude=10.0, longitude=10.0)
-        self.assertEqual(Waypoint.objects.count(), 1)
 
     def test_unique_constraint_fails_on_duplicate_address(self):
         """
         Tests that a duplicate address (violating UNIQUE) raises IntegrityError.
         """
-        Waypoint.objects.create(city="Testville", street="Main St", house_number="1")
-        with self.assertRaises(IntegrityError, msg="Duplicate address did not raise IntegrityError"):
-            Waypoint.objects.create(city="Testville", street="Main St", house_number="1")
+        Waypoint.objects.create(
+            city="Testville", postal_code="00-001", street="Main St", 
+            house_number="1", apartment_number="A"
+        )
         self.assertEqual(Waypoint.objects.count(), 1)
+
+        with self.assertRaises(IntegrityError, msg="Duplicate address did not raise IntegrityError"):
+            Waypoint.objects.create(
+                city="Testville", postal_code="00-001", street="Main St", 
+                house_number="1", apartment_number="A"
+            )
 
 
 class RouteWaypointModelTests(TestCase):
@@ -93,8 +100,22 @@ class RouteWaypointModelTests(TestCase):
     def setUp(self):
         """Creates a sample route and two waypoints."""
         self.route = Route.objects.create(name="My Test Route")
-        self.wp1 = Waypoint.objects.create(name="Point A", latitude=10.0, longitude=10.0)
-        self.wp2 = Waypoint.objects.create(name="Point B", latitude=20.0, longitude=20.0)
+        
+        # --- POPRAWKA TUTAJ ---
+        # Tworzymy dwa RÓŻNE i POPRAWNE Waypointy, 
+        # aby uniknąć błędów UNIQUE podczas konfiguracji testu.
+        
+        self.wp1 = Waypoint.objects.create(
+            name="Point A", 
+            latitude=10.0, 
+            longitude=10.0
+        )
+        self.wp2 = Waypoint.objects.create(
+            name="Point B", 
+            city="Testers", 
+            street="Main St", 
+            house_number="1"
+        )
 
     def test_unique_constraint_fails_on_duplicate_sequence(self):
         """
@@ -102,10 +123,11 @@ class RouteWaypointModelTests(TestCase):
         """
         RouteWaypoint.objects.create(route=self.route, waypoint=self.wp1, sequence=1)
         
+        self.assertEqual(self.route.waypoints.count(), 1)
+        
         with self.assertRaises(IntegrityError, msg="Duplicate sequence number did not raise error"):
             RouteWaypoint.objects.create(route=self.route, waypoint=self.wp2, sequence=1)
         
-        self.assertEqual(self.route.waypoints.count(), 1)
 
     def test_allows_repeating_waypoint_with_different_sequence(self):
         """
@@ -115,6 +137,7 @@ class RouteWaypointModelTests(TestCase):
         RouteWaypoint.objects.create(route=self.route, waypoint=self.wp1, sequence=1)
         
         try:
+            # Add the *same* waypoint (wp1) but as step 2
             RouteWaypoint.objects.create(route=self.route, waypoint=self.wp1, sequence=2)
         except IntegrityError:
             self.fail("Could not add a repeated waypoint with a different sequence.")
@@ -130,7 +153,6 @@ class RouteWaypointModelTests(TestCase):
         
         steps = list(self.route.waypoints.all())
         
-        # Check if the list is correctly ordered; should be [step1, step2]
         self.assertEqual(steps[0], rw_step1)
         self.assertEqual(steps[1], rw_step2)
 

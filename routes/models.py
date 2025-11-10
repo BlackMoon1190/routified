@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q, CheckConstraint, UniqueConstraint
 
+
 class Route(models.Model):
     """
     Stores the top-level route definitions. Each route is a container
@@ -11,6 +12,7 @@ class Route(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Waypoint(models.Model):
     """
@@ -57,6 +59,7 @@ class Waypoint(models.Model):
         if self.latitude and self.longitude:
             return f"({self.latitude}, {self.longitude})"
         return f"Waypoint {self.id}"
+
 
 class RouteWaypoint(models.Model):
     """

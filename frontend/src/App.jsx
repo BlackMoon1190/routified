@@ -1,35 +1,84 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import WaypointList from './components/WaypointList';
+import RouteList from './components/RouteList';
+
+const API_URL = 'http://localhost:8000/api';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [waypoints, setWaypoints] = useState([]);
+  const [routes, setRoutes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [waypointsResponse, routesResponse] = await Promise.all([
+          fetch(`${API_URL}/waypoints/`),
+          fetch(`${API_URL}/routes/`)
+        ]);
+
+        if (!waypointsResponse.ok || !routesResponse.ok) {
+          throw new Error('API request failed');
+        }
+
+        const waypointsData = await waypointsResponse.json();
+        const routesData = await routesResponse.json();
+
+        setWaypoints(waypointsData);
+        setRoutes(routesData);
+
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+
+  const handleWaypointAction = (action, id) => {
+    alert(`Waypoint: ${action}, ID: ${id || 'New ID'}`);
+  };
+
+  const handleRouteAction = (action, id) => {
+    alert(`Route: ${action}, ID: ${id || 'New ID'}`);
+  };
+
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error occured: {error}</div>;
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1><center>Routified</center></h1>
+
+      <RouteList 
+        routes={routes}
+        onAdd={() => handleRouteAction('Add', null)}
+        onView={(id) => handleRouteAction('View', id)}
+        onEdit={(id) => handleRouteAction('Edit', id)}
+        onDelete={(id) => handleRouteAction('Delete', id)}
+        onDownload={() => handleRouteAction('Export all routes (CSV)', 'all')}
+      />
+
+      <WaypointList 
+        waypoints={waypoints}
+        onAdd={() => handleWaypointAction('Add', null)}
+        onView={(id) => handleWaypointAction('View', id)}
+        onEdit={(id) => handleWaypointAction('Edit', id)}
+        onDelete={(id) => handleWaypointAction('Delete', id)}
+        onDownload={() => handleWaypointAction('Export all waypoints (CSV)', 'all')}
+      />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

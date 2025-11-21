@@ -1,6 +1,6 @@
 ![Routified Logo](assets/Routified_Logo.png)
 
-# Routified
+# Routified (work in progress)
 
 Routified is an application for planning routes with waypoints, allowing users to create and manage custom travel paths.
 

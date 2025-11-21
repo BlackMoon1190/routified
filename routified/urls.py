@@ -21,5 +21,4 @@ from routes import views as routes_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('routes.urls')),
-    path('', routes_views.index_view, name='index'),
 ]

@@ -63,7 +63,3 @@ class RouteWaypointViewSet(viewsets.ModelViewSet):
     
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['route']
-
-
-def index_view(request):
-    return render(request, 'routes/index.html')

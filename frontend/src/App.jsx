@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import WaypointList from './components/WaypointList';
 import RouteList from './components/RouteList';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = `http://${window.location.hostname}:8000/api`;
 
 function App() {
   const [waypoints, setWaypoints] = useState([]);

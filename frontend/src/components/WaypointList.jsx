@@ -1,8 +1,69 @@
-import React from 'react';
+import React, { useState } from 'react';
+import MapChoiceModal from './MapChoiceModal';
+import { 
+    getSystemMapUrl, 
+    getGoogleMapsUrl, 
+    getOsmUrl, 
+    canUseSystemApp,
+    openNativeLink // New import
+} from '../utils.js';
 
 const WaypointList = ({ waypoints, onAdd, onView, onEdit, onDelete, onDownload }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedWaypoint, setSelectedWaypoint] = useState(null);
+
+    const handleMapChoice = (choice) => {
+        if (!selectedWaypoint) return;
+    
+        let url;
+        switch (choice) {
+            case 'system':
+                url = getSystemMapUrl(selectedWaypoint);
+                break;
+            case 'google':
+                url = getGoogleMapsUrl(selectedWaypoint);
+                break;
+            case 'osm':
+                url = getOsmUrl(selectedWaypoint);
+                break;
+            default:
+                break;
+        }
+
+        // First, close the modal and clear state. This deactivates the focus trap.
+        setIsModalOpen(false);
+        setSelectedWaypoint(null);
+    
+        if (url) {
+            // Use a timeout to ensure the focus trap is deactivated before opening the link.
+            setTimeout(() => {
+                if (choice === 'system') {
+                    openNativeLink(url);
+                } else {
+                    window.open(url, '_blank');
+                }
+            }, 0);
+        }
+    };
+
+    const showMapChoiceModal = (waypoint) => {
+        setSelectedWaypoint(waypoint);
+        setIsModalOpen(true);
+    };
+
+    const openMap = (waypoint) => {
+        showMapChoiceModal(waypoint);
+    };
+
     return (
         <>
+            <MapChoiceModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onChoose={handleMapChoice}
+                showSystemAppOption={canUseSystemApp()}
+            />
+
             <h2>List of all waypoints ({waypoints.length}):</h2>
             
             <button 
@@ -31,7 +92,7 @@ const WaypointList = ({ waypoints, onAdd, onView, onEdit, onDelete, onDownload }
                         <div>
                             <button 
                                 className="map-btn-style" 
-                                onClick={() => alert(`Open map for waypoint ID: ${wp.id}`)}
+                                onClick={() => openMap(wp)}
                             >
                                 Open map
                             </button>

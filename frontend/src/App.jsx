@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import WaypointList from './components/WaypointList';
 import RouteList from './components/RouteList';
+import MapProviderSelector from './components/MapProviderSelector';
 
 const API_URL = `http://${window.location.hostname}:8000/api`;
 
@@ -77,6 +78,8 @@ function App() {
         onDelete={(id) => handleWaypointAction('Delete', id)}
         onDownload={() => handleWaypointAction('Export all waypoints (CSV)', 'all')}
       />
+
+      <MapProviderSelector />
     </>
   );
 }

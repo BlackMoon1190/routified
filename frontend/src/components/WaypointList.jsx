@@ -1,41 +1,39 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import MapChoiceModal from './MapChoiceModal';
 import { 
     getSystemMapUrl, 
     getGoogleMapsUrl, 
     getOsmUrl, 
     canUseSystemApp,
-    openNativeLink // New import
+    openNativeLink
 } from '../utils.js';
 
 const WaypointList = ({ waypoints, onAdd, onView, onEdit, onDelete, onDownload }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedWaypoint, setSelectedWaypoint] = useState(null);
 
-    const handleMapChoice = (choice) => {
-        if (!selectedWaypoint) return;
+    const handleMapChoice = (choice, waypoint) => {
+        if (!waypoint) return;
     
         let url;
         switch (choice) {
             case 'system':
-                url = getSystemMapUrl(selectedWaypoint);
+                url = getSystemMapUrl(waypoint);
                 break;
             case 'google':
-                url = getGoogleMapsUrl(selectedWaypoint);
+                url = getGoogleMapsUrl(waypoint);
                 break;
             case 'osm':
-                url = getOsmUrl(selectedWaypoint);
+                url = getOsmUrl(waypoint);
                 break;
             default:
                 break;
         }
 
-        // First, close the modal and clear state. This deactivates the focus trap.
         setIsModalOpen(false);
         setSelectedWaypoint(null);
     
         if (url) {
-            // Use a timeout to ensure the focus trap is deactivated before opening the link.
             setTimeout(() => {
                 if (choice === 'system') {
                     openNativeLink(url);
@@ -52,7 +50,12 @@ const WaypointList = ({ waypoints, onAdd, onView, onEdit, onDelete, onDownload }
     };
 
     const openMap = (waypoint) => {
-        showMapChoiceModal(waypoint);
+        const savedProvider = localStorage.getItem('mapProvider');
+        if (savedProvider && savedProvider !== 'always-ask') {
+            handleMapChoice(savedProvider, waypoint);
+        } else {
+            showMapChoiceModal(waypoint);
+        }
     };
 
     return (
@@ -60,7 +63,7 @@ const WaypointList = ({ waypoints, onAdd, onView, onEdit, onDelete, onDownload }
             <MapChoiceModal 
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                onChoose={handleMapChoice}
+                onChoose={(choice) => handleMapChoice(choice, selectedWaypoint)}
                 showSystemAppOption={canUseSystemApp()}
             />
 

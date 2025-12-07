@@ -214,8 +214,44 @@ button:disabled {
         gap: 8px;
     }
 
-    .modal-actions button {
-        width: 100%;
-        margin-right: 0;
+        .modal-actions button {
+
+            width: 100%;
+
+            margin-right: 0;
+
+        }
+
     }
-}
+
+    
+
+    .map-provider-selector {
+
+        position: fixed;
+
+        bottom: 10px;
+
+        right: 10px;
+
+        background-color: #f0f0f0;
+
+        padding: 10px;
+
+        border-radius: 5px;
+
+        border: 1px solid #ccc;
+
+        z-index: 1001;
+
+    }
+
+    
+
+    .map-provider-selector label {
+
+        margin-right: 10px;
+
+    }
+
+    
